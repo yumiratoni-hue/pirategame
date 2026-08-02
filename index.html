@@ -3,30 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pelayaran Pixel - Endless Runner</title>
+    <title>CekHarga COD - Estimator Pasar Lokal</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="game-container">
-        <!-- Canvas tempat game digambar -->
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
-        
-        <!-- UI untuk Skor dan Game Over -->
-        <div id="ui">
-            <p>Jarak: <span id="score">0</span> mil</p>
-        </div>
-        <div id="game-over-screen" style="display: none;">
-            <h1>KAPAL KARAM!</h1>
-            <p>Tekan [SPASI] untuk Mengulang</p>
-        </div>
+    <div class="container">
+        <header>
+            <h1>CekHarga COD 📦</h1>
+            <p>Estimasi Harga Pasar Lokal & Generator Pencarian Rahasia</p>
+        </header>
 
-        <!-- Instruksi di bawah layar -->
-        <div id="instructions">
-            Gunakan panah Kiri/Kanan atau A/D untuk mengemudi kapal.
-        </div>
+        <main>
+            <div class="card">
+                <div class="form-group">
+                    <label for="product">Nama Barang</label>
+                    <input type="text" id="product" placeholder="Contoh: iPhone 11 64GB">
+                </div>
+                <div class="form-group">
+                    <label for="price">Harga Baru (Retail) Rp</label>
+                    <input type="number" id="price" placeholder="Contoh: 7000000">
+                </div>
+                <div class="form-group">
+                    <label for="location">Kota Target COD</label>
+                    <input type="text" id="location" value="Surakarta" placeholder="Contoh: Jakarta">
+                </div>
+                <div class="form-group">
+                    <label for="condition">Kondisi Barang</label>
+                    <select id="condition">
+                        <option value="0.8">Like New (Mulus, Pemakaian < 1 Tahun)</option>
+                        <option value="0.6">Bekas Wajar (Lecet Pemakaian)</option>
+                        <option value="0.4">Minus (Ada kerusakan ringan/batangan)</option>
+                    </select>
+                </div>
+                <button id="btn-estimate">Hitung Estimasi Harga</button>
+            </div>
+
+            <div id="result" class="card hidden">
+                <h2>📊 Hasil Analisis</h2>
+                <div class="price-box">
+                    <p>Estimasi Harga COD:</p>
+                    <h3 id="estimated-price">Rp 0</h3>
+                    <small id="margin-info">Margin Keuntungan Potensial (Jika dijual kembali): Rp 0</small>
+                </div>
+
+                <div class="dork-section">
+                    <p><strong>🕵️‍♂️ Cek Harga Asli di Lapangan:</strong></p>
+                    <p><small>Klik tombol di bawah untuk langsung mencari harga riil menggunakan "jalur belakang" Google:</small></p>
+                    <div class="dork-buttons">
+                        <button id="btn-olx" class="btn-outline">Cari di OLX</button>
+                        <button id="btn-carousell" class="btn-outline">Cari di Carousell</button>
+                        <button id="btn-fb" class="btn-outline">Cari di FB Marketplace</button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
-
-    <!-- Menghubungkan logika game -->
-    <script src="game.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
