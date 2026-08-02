@@ -3,58 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CekHarga COD - Estimator Pasar Lokal</title>
+    <title>Kalkulator Harga Pantas COD</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>CekHarga COD 📦</h1>
-            <p>Estimasi Harga Pasar Lokal & Generator Pencarian Rahasia</p>
+            <h1>⚖️ Kalkulator Harga Pantas COD</h1>
+            <p>Analisis harga pasaran bekas & hitung batas aman tawar menawar</p>
         </header>
 
         <main>
             <div class="card">
                 <div class="form-group">
-                    <label for="product">Nama Barang</label>
-                    <input type="text" id="product" placeholder="Contoh: iPhone 11 64GB">
-                </div>
-                <div class="form-group">
-                    <label for="price">Harga Baru (Retail) Rp</label>
-                    <input type="number" id="price" placeholder="Ketik manual atau biarkan auto-fill">
-                    <small id="autofill-info" style="display: block; margin-top: 5px; font-size: 0.8rem; color: var(--text-muted);">Ketik nama barang dengan spesifik untuk auto-fill harga.</small>
+                    <label for="product">Nama Barang & Spesifikasi</label>
+                    <input type="text" id="product" placeholder="Contoh: iPhone 11 64GB Resmi">
                 </div>
                 <div class="form-group">
                     <label for="location">Kota Target COD</label>
                     <input type="text" id="location" value="Surakarta" placeholder="Contoh: Jakarta">
                 </div>
-                <div class="form-group">
-                    <label for="condition">Kondisi Barang</label>
-                    <select id="condition">
-                        <option value="0.8">Like New (Mulus, Pemakaian &lt; 1 Tahun)</option>
-                        <option value="0.6">Bekas Wajar (Lecet Pemakaian)</option>
-                        <option value="0.4">Minus (Ada kerusakan ringan/batangan)</option>
-                    </select>
+
+                <div class="helper-box">
+                    <p><strong>Cek 3 Harga Pasaran Terendah Saat Ini:</strong></p>
+                    <p><small>Klik tombol di bawah untuk melihat iklan aktif di pasaran:</small></p>
+                    <div class="dork-buttons">
+                        <button type="button" id="btn-olx" class="btn-secondary">Cari Pembanding di OLX</button>
+                        <button type="button" id="btn-fb" class="btn-secondary">Cari Pembanding di FB Marketplace</button>
+                    </div>
                 </div>
-                <button id="btn-estimate">Hitung Estimasi Harga</button>
+
+                <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid var(--border);">
+
+                <div class="form-group">
+                    <label for="price1">Harga Sampel 1 (Dari Pasaran)</label>
+                    <input type="number" id="price1" placeholder="Contoh: 4500000">
+                </div>
+                <div class="form-group">
+                    <label for="price2">Harga Sampel 2 (Dari Pasaran)</label>
+                    <input type="number" id="price2" placeholder="Contoh: 4700000">
+                </div>
+                <div class="form-group">
+                    <label for="price3">Harga Sampel 3 (Dari Pasaran)</label>
+                    <input type="number" id="price3" placeholder="Contoh: 5000000">
+                </div>
+
+                <button id="btn-calculate">Hitung Harga Pantas & Margin</button>
             </div>
 
             <div id="result" class="card hidden">
-                <h2>📊 Hasil Analisis</h2>
+                <h2>📊 Hasil Analisis Pasar</h2>
+                
                 <div class="price-box">
-                    <p>Estimasi Harga COD:</p>
-                    <h3 id="estimated-price">Rp 0</h3>
-                    <small id="margin-info">Margin Keuntungan Potensial (Jika dijual kembali): Rp 0</small>
+                    <p>Harga Pantas Pasaran (Rata-rata):</p>
+                    <h3 id="market-avg">Rp 0</h3>
                 </div>
 
-                <div class="dork-section">
-                    <p><strong>🕵️‍♂️ Cek Harga Asli di Lapangan:</strong></p>
-                    <p><small>Klik tombol di bawah untuk langsung mencari harga riil menggunakan "jalur belakang" Google:</small></p>
-                    <div class="dork-buttons">
-                        <button id="btn-olx" class="btn-outline">Cari di OLX</button>
-                        <button id="btn-carousell" class="btn-outline">Cari di Carousell</button>
-                        <button id="btn-fb" class="btn-outline">Cari di FB Marketplace</button>
+                <div class="recommendation-grid">
+                    <div class="rec-item safe-buy">
+                        <p>Batas Maksimal Beli (Modal COD):</p>
+                        <h4 id="max-buy">Rp 0</h4>
+                        <small>Agar aman ditawar lebih murah ke penjual</small>
                     </div>
+                    <div class="rec-item target-sell">
+                        <p>Target Harga Jual Kembali:</p>
+                        <h4 id="target-sell">Rp 0</h4>
+                        <small>Nilai wajar cepat laku di pasaran</small>
+                    </div>
+                </div>
+
+                <div class="profit-box">
+                    <p>Potensi Keuntungan Bersih (Profit): <strong id="est-profit">Rp 0</strong></p>
                 </div>
             </div>
         </main>
