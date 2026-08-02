@@ -6,15 +6,21 @@ const gameOverScreen = document.getElementById('game-over-screen');
 // Variabel Utama Game
 let score = 0;
 let isGameOver = false;
-let speed = 0.01; // Kecepatan laju kapal
-const horizonY = canvas.height * 0.4; // Posisi garis cakrawala (40% dari atas)
+let speed = 0.012; // Kecepatan kapal mendekati rintangan
 
-// Posisi Pemain (Kemudi)
-let playerX = 0; // -1 (Kiri penuh) sampai 1 (Kanan penuh)
-const playerSpeed = 0.05;
+// Mengatur titik prespektif berdasarkan gambar yang kamu kirim
+const horizonY = canvas.height * 0.35; // Cakrawala di gambar (sekitar 35% dari atas)
+const deckY = canvas.height * 0.75;    // Posisi ujung dek kapal di gambar
 
-// Array untuk menyimpan rintangan (karang)
+let playerX = 0;
+const playerSpeed = 0.04;
+let sway = 0; // Efek kamera bergoyang saat belok
+
 let obstacles = [];
+
+// Memuat Gambar Latar Belakang (Gambar yang kamu kirim)
+const bgImage = new Image();
+bgImage.src = 'image_f1749e.jpg';
 
 // Kontrol Keyboard
 let keys = {};
@@ -25,105 +31,104 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
 function spawnObstacle() {
-    // Munculkan rintangan secara acak di kiri, tengah, atau kanan
-    const startX = (Math.random() * 4) - 2; // Nilai antara -2 hingga 2
+    const startX = (Math.random() * 4) - 2; 
     obstacles.push({
         x: startX,
-        progress: 0 // 0 = di cakrawala, 1 = mengenai layar pemain
+        progress: 0 
     });
+}
+
+// Fungsi menggambar Karang bergaya Pixel Art
+function drawPixelRock(x, y, width, height) {
+    ctx.fillStyle = '#4a3c31'; // Warna dasar karang
+    ctx.fillRect(x - width/2, y - height, width, height);
+    
+    // Highlight dan Bayangan (Pixel effect)
+    ctx.fillStyle = '#6b5744'; 
+    ctx.fillRect(x - width/2 + width*0.1, y - height + height*0.1, width*0.8, height*0.4);
+    
+    ctx.fillStyle = '#30261f'; 
+    ctx.fillRect(x - width/2 + width*0.6, y - height + height*0.5, width*0.4, height*0.5);
+    
+    // Ujung tajam karang
+    ctx.fillStyle = '#7a6450';
+    ctx.fillRect(x - width/4, y - height - height*0.2, width/2, height*0.2);
 }
 
 function update() {
     if (isGameOver) return;
 
-    // Pergerakan Pemain
-    if ((keys['ArrowLeft'] || keys['KeyA']) && playerX > -1.5) playerX -= playerSpeed;
-    if ((keys['ArrowRight'] || keys['KeyD']) && playerX < 1.5) playerX += playerSpeed;
+    // Logika Mengemudi (Menggeser posisi rintangan & efek kamera)
+    if ((keys['ArrowLeft'] || keys['KeyA']) && playerX > -1.5) {
+        playerX -= playerSpeed;
+        sway = Math.max(sway - 1, -20); // Kamera miring ke kiri
+    } else if ((keys['ArrowRight'] || keys['KeyD']) && playerX < 1.5) {
+        playerX += playerSpeed;
+        sway = Math.min(sway + 1, 20); // Kamera miring ke kanan
+    } else {
+        // Kamera kembali ke tengah perlahan
+        if (sway > 0) sway -= 0.5;
+        if (sway < 0) sway += 0.5;
+    }
 
     // Tambah Skor
-    score += 0.1;
+    score += 0.05;
     scoreElement.innerText = Math.floor(score);
 
-    // Spawn Rintangan Baru seiring waktu
-    if (Math.random() < 0.03) spawnObstacle(); // 3% kemungkinan spawn setiap frame
+    // Semakin tinggi skor, kemungkinan muncul rintangan semakin besar
+    if (Math.random() < 0.02 + (score * 0.0001)) spawnObstacle();
 
     // Update posisi rintangan
     for (let i = 0; i < obstacles.length; i++) {
         let obs = obstacles[i];
-        obs.progress += speed;
+        obs.progress += speed + (score * 0.00002); // Kecepatan perlahan naik
 
-        // Deteksi Tabrakan
-        // Jika rintangan sudah dekat dengan layar (progress > 0.8) dan posisinya sejajar dengan pemain
-        if (obs.progress > 0.8 && obs.progress < 1.0) {
+        // Deteksi Tabrakan di depan kapal (progress ~0.9)
+        if (obs.progress > 0.85 && obs.progress < 1.0) {
             let distanceX = Math.abs(obs.x - playerX);
-            if (distanceX < 0.5) { // Jarak toleransi tabrakan
+            if (distanceX < 0.4) {
                 isGameOver = true;
                 gameOverScreen.style.display = 'block';
             }
         }
     }
 
-    // Bersihkan rintangan yang sudah melewati layar (progress > 1)
-    obstacles = obstacles.filter(obs => obs.progress <= 1);
+    // Buang rintangan yang sudah menabrak / lewat
+    obstacles = obstacles.filter(obs => obs.progress <= 1.0);
 }
 
 function draw() {
-    // 1. Gambar Langit
-    ctx.fillStyle = '#6ab8cc'; // Warna langit retro
-    ctx.fillRect(0, 0, canvas.width, horizonY);
-
-    // 2. Gambar Laut
-    ctx.fillStyle = '#216e8c'; // Warna laut biru tua
-    ctx.fillRect(0, horizonY, canvas.width, canvas.height - horizonY);
-
-    // Garis Cakrawala
-    ctx.fillStyle = '#174f66';
-    ctx.fillRect(0, horizonY, canvas.width, 2);
-
-    // 3. Gambar Rintangan (Ilusi 2D Scaling)
-    // Urutkan agar rintangan yang jauh digambar lebih dulu (z-sorting)
-    obstacles.sort((a, b) => a.progress - b.progress);
-
-    for (let obs of obstacles) {
-        // Kalkulasi ilusi jarak
-        // Skala membesar dari 0 (horizon) ke 1 (depan mata)
-        let scale = obs.progress; 
-        let y = horizonY + (canvas.height - horizonY) * scale;
-        
-        // Kalkulasi posisi X berdasarkan pergerakan kemudi pemain
-        let x = (canvas.width / 2) + ((obs.x - playerX) * (canvas.width / 2) * scale);
-        
-        // Ukuran karang
-        let width = 100 * scale;
-        let height = 80 * scale;
-
-        // Gambar Karang Sederhana (Warna Coklat/Abu)
-        ctx.fillStyle = '#555';
-        ctx.fillRect(x - width/2, y - height, width, height);
-        // Highlight agar sedikit berbentuk
-        ctx.fillStyle = '#777';
-        ctx.fillRect(x - width/2 + (width*0.1), y - height + (height*0.1), width*0.3, height*0.3);
+    // 1. Gambar Background (Gambar Pixel Art)
+    if (bgImage.complete) {
+        // Menggambar background lebih besar agar saat 'sway' pinggirannya tidak terpotong (Ilusi 3D)
+        ctx.drawImage(bgImage, -30 - sway, -20, canvas.width + 60, canvas.height + 40);
+    } else {
+        // Fallback jika gambar belum dimuat
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
-    // 4. Gambar Kemudi Kapal (POV) di bagian bawah layar
-    // Ini area di mana nanti kamu bisa meletakkan "image_f1749e.jpg"
-    ctx.fillStyle = '#8b5a2b'; // Warna kayu
-    
-    // Dasar kapal
-    ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
-    
-    // Setir Kemudi (hanya bentuk sederhana untuk ilustrasi)
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height - 30, 80, 0, Math.PI * 2);
-    ctx.lineWidth = 15;
-    ctx.strokeStyle = '#5c3a21';
-    ctx.stroke();
-    // Efek putaran setir berdasarkan input pemain
-    ctx.beginPath();
-    ctx.arc(canvas.width / 2, canvas.height - 30, 40, playerX * -0.5, (playerX * -0.5) + Math.PI, false);
-    ctx.lineWidth = 10;
-    ctx.strokeStyle = '#a67b5b';
-    ctx.stroke();
+    // Urutkan rintangan dari yang terjauh ke terdekat (Z-sorting)
+    obstacles.sort((a, b) => a.progress - b.progress);
+
+    // 2. Gambar Rintangan (Karang)
+    for (let obs of obstacles) {
+        let scale = obs.progress; 
+        
+        // Y membesar dari garis cakrawala ke arah dek kapal
+        let y = horizonY + (deckY - horizonY) * scale;
+        
+        // X bergeser berdasarkan input setir pemain
+        let x = (canvas.width / 2) + ((obs.x - playerX) * (canvas.width / 2) * scale) - sway;
+        
+        let width = 140 * scale;
+        let height = 110 * scale;
+
+        // Hanya gambar jika rintangan masih di area laut (belum menyentuh kamera / bagian bawah layar)
+        if (scale < 1.0) {
+            drawPixelRock(x, y, width, height);
+        }
+    }
 }
 
 function gameLoop() {
@@ -135,10 +140,18 @@ function gameLoop() {
 function resetGame() {
     score = 0;
     playerX = 0;
+    sway = 0;
     obstacles = [];
     isGameOver = false;
     gameOverScreen.style.display = 'none';
 }
 
-// Mulai Game
-gameLoop();
+// Tunggu gambar termuat baru mulai game
+bgImage.onload = () => {
+    gameLoop();
+};
+
+// Jaga-jaga jika gambar tidak ada, game tetap jalan setelah 1 detik
+setTimeout(() => {
+    if (!bgImage.complete) gameLoop();
+}, 1000);
