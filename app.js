@@ -1,22 +1,59 @@
+// --- DATABASE LOKAL (Kamus Harga Retail) ---
+const databaseHarga = [
+    { keywords: ["iphone 11", "64gb"], price: 6500000 },
+    { keywords: ["iphone 11", "128gb"], price: 7500000 },
+    { keywords: ["iphone 13", "128gb"], price: 11000000 },
+    { keywords: ["samsung a54"], price: 5999000 },
+    { keywords: ["poco x5", "pro"], price: 3799000 },
+    { keywords: ["redmi note 12"], price: 2599000 },
+    { keywords: ["vario 150"], price: 24500000 },
+    { keywords: ["beat", "2023"], price: 18000000 },
+    { keywords: ["nmax", "connected"], price: 32800000 },
+    { keywords: ["scoopy", "2023"], price: 21900000 }
+];
+
+const productInput = document.getElementById('product');
+const priceInput = document.getElementById('price');
+const autoFillInfo = document.getElementById('autofill-info');
+
+// 1. Logika Auto-Fill Harga
+productInput.addEventListener('input', function() {
+    const userInput = this.value.toLowerCase();
+    let foundPrice = null;
+
+    for (let item of databaseHarga) {
+        const matchAll = item.keywords.every(kw => userInput.includes(kw));
+        if (matchAll) {
+            foundPrice = item.price;
+            break;
+        }
+    }
+
+    if (foundPrice) {
+        priceInput.value = foundPrice;
+        autoFillInfo.innerText = "✨ Harga retail otomatis terdeteksi dari database!";
+        autoFillInfo.style.color = "#059669";
+    } else {
+        autoFillInfo.innerText = "Ketik manual atau tambah nama seri secara spesifik.";
+        autoFillInfo.style.color = "var(--text-muted)";
+    }
+});
+
+// 2. Logika Hitung Estimasi
 document.getElementById('btn-estimate').addEventListener('click', function() {
-    const product = document.getElementById('product').value;
-    const price = parseFloat(document.getElementById('price').value);
+    const product = productInput.value;
+    const price = parseFloat(priceInput.value);
     const location = document.getElementById('location').value;
     const conditionMultiplier = parseFloat(document.getElementById('condition').value);
 
     if (!product || isNaN(price) || price <= 0) {
-        alert("Harap isi nama barang dan harga retail baru dengan nominal angka yang benar.");
+        alert("Harap isi nama barang dan pastikan harga retail nominal angka yang benar.");
         return;
     }
 
-    // 1. Kalkulasi Depresiasi Harga
-    // Rumus: Harga Baru * Pengali Kondisi
     const estimatedPrice = price * conditionMultiplier;
-    
-    // Potensi profit jika membeli di harga bawah dan menjual di harga atas (10% selisih)
     const margin = estimatedPrice * 0.10; 
 
-    // Fungsi Format Rupiah
     const formatRupiah = (number) => {
         return new Intl.NumberFormat('id-ID', { 
             style: 'currency', 
@@ -25,7 +62,6 @@ document.getElementById('btn-estimate').addEventListener('click', function() {
         }).format(number);
     };
 
-    // Tampilkan Estimasi Range (Harga Bawah - Harga Atas)
     const priceLower = estimatedPrice - (estimatedPrice * 0.05);
     const priceUpper = estimatedPrice + (estimatedPrice * 0.05);
     
@@ -35,11 +71,8 @@ document.getElementById('btn-estimate').addEventListener('click', function() {
     document.getElementById('margin-info').innerText = 
         `Potensi margin/selisih aman: ${formatRupiah(margin)}`;
 
-    // Tampilkan Elemen UI
     document.getElementById('result').classList.remove('hidden');
 
-    // 2. Generator Google Dorks (Pencarian Spesifik)
-    // Kata kunci ditambah istilah lapangan seperti BU (Butuh Uang) atau COD
     const searchTerms = `"${product}" "${location}" BU OR COD OR Nego`;
     
     document.getElementById('btn-olx').onclick = () => {
@@ -53,7 +86,6 @@ document.getElementById('btn-estimate').addEventListener('click', function() {
     };
 
     document.getElementById('btn-fb').onclick = () => {
-        // Facebook Marketplace butuh perlakuan sedikit berbeda karena strukturnya
         const fbTerms = `"${product}" "${location}"`;
         const query = encodeURIComponent(`site:facebook.com/marketplace ${fbTerms}`);
         window.open(`https://www.google.com/search?q=${query}`, '_blank');
